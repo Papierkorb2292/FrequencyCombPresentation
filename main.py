@@ -72,7 +72,7 @@ def add_spectrogram(scene: Scene):
         stroke_width=3
     ))
     scene.add(Text("I").shift(LEFT*3.5+UP*3.5))
-    scene.add(Text("f").shift(RIGHT*6.5+DOWN*3.5))
+    scene.add(MathTex(r"\frac{f}{Hz}").shift(RIGHT*6.5+DOWN*3.5))
     comb_spikes = [generateSpectrogramSpike(n) for n in range(5,10)]
     comb_spikes_group = VGroup(*comb_spikes).shift(3*DOWN)
     scene.add(comb_spikes_group)
@@ -100,7 +100,7 @@ class Superposition(Scene):
             -config["frame_x_radius"],
             config["frame_x_radius"],
             2*PI,
-        ))), FadeIn(Text("E").shift(LEFT*0.5+UP*3.5)), FadeIn(Text("x").shift(RIGHT*6.5+DOWN*0.5)))
+        ))), FadeIn(Text("E").shift(LEFT*0.5+UP*3.5)), FadeIn(MathTex(r"\frac{t}{s}").shift(RIGHT*6.5+DOWN*0.5)))
         prev_wave = calcWaveForFrequency(7)
         prev_wave_function = prev_wave.function
         spike = comb_spikes[2]
@@ -133,7 +133,7 @@ class DetermineFrequency(Scene):
     def construct(self):
         # Setup ending state of Scene "Superposition"
         plane = NumberPlane(x_range=(-40,40,2*PI)).shift(OUT)
-        self.add(plane, Text("E").shift(LEFT*0.5+UP*3.5), Text("x").shift(RIGHT*6.5+DOWN*0.5))
+        self.add(plane, Text("E").shift(LEFT*0.5+UP*3.5), MathTex(r"\frac{t}{s}").shift(RIGHT*6.5+DOWN*0.5))
         frequency_comb = FunctionGraph(
             lambda x: np.sum([np.sin(f*x)*np.exp(np.square(7-f)/-2) for f in range(5,10)]),
             color=WHITE
@@ -144,8 +144,13 @@ class DetermineFrequency(Scene):
         # The frequency is known to be slightly below the 7/2Pi comb spike
         # The frequency will be determined by measuring the beat frequency of it and the aforementioned comb spike
 
-        unknown_wave = calcWaveForFrequency(6.8, color=RED, x_range=(-40,40))
+        unknown_wave = calcWaveForFrequency(6.8, color=RED)
         self.play(Create(unknown_wave), Create(MathTex(r"f=?").shift(UP*3.5+RIGHT*3.5)))
+        
+        # Extend unknown_wave to (-40,40)
+        self.remove(unknown_wave)
+        unknown_wave = calcWaveForFrequency(6.8, color=RED, x_range=(-40,40))
+        self.add(unknown_wave)
         self.wait(1)
         # Convert the unknown wave to a beat frequency wave
 
