@@ -49,34 +49,44 @@ def calcWaveForFrequency(f: int) -> FunctionGraph:
         color=comb_spike_colors[f-5]
     )
 
+def add_spectrogram(scene: Scene):
+    spectrogram_plane = NumberPlane(x_range=(
+        -config["frame_x_radius"]+3,
+        config["frame_x_radius"]+3,
+        1,
+    ), y_range=(
+        -config["frame_y_radius"]+3,
+        config["frame_y_radius"]+3,
+        1,
+    ))
+    scene.add(spectrogram_plane)
+    scene.add(Rectangle(
+        height=spectrogram_plane.get_y_range()[1]-spectrogram_plane.get_y_range()[0]+0.2,
+        width=spectrogram_plane.get_x_range()[1]-spectrogram_plane.get_x_range()[0]+0.2,
+        z_index=-1,
+        fill_opacity=1,
+        fill_color=BLACK,
+        stroke_width=3
+    ))
+    scene.add(Text("I").shift(LEFT*3.5+UP*3.5))
+    scene.add(Text("f").shift(RIGHT*6.5+DOWN*3.5))
+    comb_spikes = [generateSpectrogramSpike(n) for n in range(5,10)]
+    comb_spikes_group = VGroup(*comb_spikes).shift(3*DOWN)
+    scene.add(comb_spikes_group)
+
 class Spectrogram(Scene):
     def construct(self):
-        spectrogram_plane = NumberPlane(x_range=(
-            -config["frame_x_radius"]+3,
-            config["frame_x_radius"]+3,
-            1,
-        ), y_range=(
-            -config["frame_y_radius"]+3,
-            config["frame_y_radius"]+3,
-            1,
-        ))
-        self.add(spectrogram_plane)
-        self.add(Rectangle(
-            height=spectrogram_plane.get_y_range()[1]-spectrogram_plane.get_y_range()[0]+0.2,
-            width=spectrogram_plane.get_x_range()[1]-spectrogram_plane.get_x_range()[0]+0.2,
-            z_index=-1,
-            fill_opacity=1,
-            fill_color=BLACK,
-            stroke_width=3
-        ))
-        self.add(Text("I").shift(LEFT*3.5+UP*3.5))
-        self.add(Text("f").shift(RIGHT*6.5+DOWN*3.5))
-        comb_spikes = [generateSpectrogramSpike(n) for n in range(5,10)]
-        comb_spikes_group = VGroup(*comb_spikes).shift(3*DOWN).rotate(PI/2, LEFT, about_point=DOWN*3)
-        self.add(comb_spikes_group)
-        self.play(Rotate(comb_spikes_group, angle=-PI/2, axis=LEFT, about_point=DOWN*3))
+        add_spectrogram(self)
+        self.mobjects[-1].rotate(PI/2, LEFT, about_point=DOWN*3)
+        self.play(Rotate(self.mobjects[-1], angle=-PI/2, axis=LEFT, about_point=DOWN*3))
 
-        self.wait(2)
+
+class Superposition(Scene):
+    def construct(self):
+        add_spectrogram(self)
+
+        spectrogram_objects = self.mobjects[:4]
+        comb_spikes = self.mobjects[-1].submobjects
 
         for o in self.mobjects:
             o.set_z_index(o.get_z_index()+10)
@@ -110,6 +120,7 @@ class Spectrogram(Scene):
             self.remove(wave)
             self.play(AnimationGroup(FadeToColor(sum_wave, WHITE), FadeOut(prev_wave)))
             prev_wave = sum_wave
+        self.play(*[FadeOut(o) for o in spectrogram_objects])
 
 
 import sys
