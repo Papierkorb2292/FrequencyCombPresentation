@@ -199,6 +199,45 @@ class DetermineFrequency(Scene):
         self.wait(5)
         self.play(Create(MathTex(r"f_{Schwebung}=\frac{1}{5}Hz").shift(UP*2.5+LEFT*0.4)))
 
+class CalculateFrequency(Scene):
+    def construct(self):
+        beat_frequency_variable = MathTex(r"f_{Schwebung}=")
+        beat_frequency_value = MathTex(r"\frac{1}{5}Hz")
+        self.add(VGroup(beat_frequency_variable, beat_frequency_value).arrange().shift(UP*2.5+LEFT*0.4))
+        comb_spike_variable = MathTex(r"f_{spitze}=")
+        comb_spike_value = MathTex(r"7Hz")
+        self.wait(2)
+        self.play(Create(VGroup(comb_spike_variable, comb_spike_value).arrange().shift(UP*1.5+LEFT*0.4)))
+        self.wait(2)
+        self.play(Create(MathTex(r"f < f_{spitze}").shift(UP*0.5+LEFT*0.4)))
+        self.wait(2)
+        equation_beat_frequency = MathTex(r"f_{Schwebung}")
+        equation_equals = MathTex(r"=")
+        equation_abs1 = MathTex(r"\mid")
+        equation_comb_spike = MathTex(r"f_{spitze}")
+        equation_minus = MathTex(r"-")
+        equation_frequency = MathTex(r"f")
+        equation_abs2 = MathTex(r"\mid")
+        self.play(Create(VGroup(equation_beat_frequency, equation_equals, equation_abs1, equation_comb_spike, equation_minus, equation_frequency, equation_abs2).arrange().shift(DOWN*0.5+LEFT*0.4)))
+        self.wait(2)
+        equation_beat_frequency_value = beat_frequency_value.copy()
+        self.play(equation_beat_frequency_value.animate.move_to(equation_beat_frequency), FadeOut(equation_beat_frequency))
+        self.wait(2)
+        equation_comb_spike_value = comb_spike_value.copy()
+        self.play(equation_comb_spike_value.animate.move_to(equation_comb_spike), FadeOut(equation_comb_spike))
+        self.wait(5)
+        self.play(FadeOut(equation_abs1), FadeOut(equation_abs2))
+        self.wait(5)
+        equation_new_plus = MathTex(r"+").move_to(equation_equals)
+        equation_new_minus = MathTex(r"-").move_to(equation_beat_frequency_value).shift(LEFT)
+        self.play(Transform(equation_equals, equation_new_plus), Transform(equation_minus, MathTex(r"=").move_to(equation_minus)), Create(equation_new_minus))
+        self.wait(5)
+        self.play(Transform(VGroup(equation_new_minus, equation_beat_frequency_value, equation_equals, equation_comb_spike_value), MathTex(r"6.8Hz").move_to(equation_comb_spike_value)))
+        
+        
+
+
+
 
 import sys
 
