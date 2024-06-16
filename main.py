@@ -96,7 +96,11 @@ class Superposition(Scene):
 
         self.play(*[o.animate.scale(0.35, about_point=ORIGIN).shift(UP*2.5+RIGHT*4.5) for o in self.mobjects])
 
-        self.play(FadeIn(NumberPlane()), FadeIn(Text("E").shift(LEFT*0.5+UP*3.5)), FadeIn(Text("x").shift(RIGHT*6.5+DOWN*0.5)))
+        self.play(FadeIn(NumberPlane(x_range=(
+            -config["frame_x_radius"],
+            config["frame_x_radius"],
+            2*PI,
+        ))), FadeIn(Text("E").shift(LEFT*0.5+UP*3.5)), FadeIn(Text("x").shift(RIGHT*6.5+DOWN*0.5)))
         prev_wave = calcWaveForFrequency(7)
         prev_wave_function = prev_wave.function
         spike = comb_spikes[2]
@@ -128,7 +132,7 @@ class Superposition(Scene):
 class DetermineFrequency(Scene):
     def construct(self):
         # Setup ending state of Scene "Superposition"
-        plane = NumberPlane(x_range=(-40,40,1)).shift(OUT)
+        plane = NumberPlane(x_range=(-40,40,2*PI)).shift(OUT)
         self.add(plane, Text("E").shift(LEFT*0.5+UP*3.5), Text("x").shift(RIGHT*6.5+DOWN*0.5))
         frequency_comb = FunctionGraph(
             lambda x: np.sum([np.sin(f*x)*np.exp(np.square(7-f)/-2) for f in range(5,10)]),
