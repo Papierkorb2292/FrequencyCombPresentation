@@ -32,10 +32,10 @@ class PulseLaser(Scene):
         plane = NumberPlane()
         time.add_updater(lambda m, dt: m.increment_value(6*dt))
         self.play(FadeIn(plane), Create(laser_func), FadeIn(Text("E").shift(LEFT*0.5+UP*2.5)), FadeIn(Text("x").shift(RIGHT*6.5+DOWN*0.5)))
-        self.wait((10*2*PI+5)/6-1)
+        self.wait((10*2*PI+5)/6-1) # Play animation until time.get_value() == 10*2*PI, so a pulse ends up back at the origin
         time.set_value(0)
         time.clear_updaters()
-        self.wait(0)
+        self.wait(1)
 
 comb_spike_colors = [RED, ORANGE, YELLOW, GREEN, BLUE]
 def generateSpectrogramSpike(n: int) -> Rectangle:
@@ -83,7 +83,8 @@ class Spectrogram(Scene):
         self.mobjects[-1].rotate(PI/2, LEFT, about_point=DOWN*3)
         self.play(Rotate(self.mobjects[-1], angle=-PI/2, axis=LEFT, about_point=DOWN*3))
 
-
+# This scene takes the spectrogram and shows each of the wave that correspond
+# to the comb spikes being added together
 class Superposition(Scene):
     def construct(self):
         add_spectrogram(self)
@@ -218,20 +219,26 @@ class CalculateFrequency(Scene):
         equation_minus = MathTex(r"-")
         equation_frequency = MathTex(r"f")
         equation_abs2 = MathTex(r"\mid")
+        # f_{Schwebung} = | f_{spitze} - f |
         self.play(Create(VGroup(equation_beat_frequency, equation_equals, equation_abs1, equation_comb_spike, equation_minus, equation_frequency, equation_abs2).arrange().shift(DOWN*0.5+LEFT*0.4)))
         self.wait(2)
         equation_beat_frequency_value = beat_frequency_value.copy()
+        # \frac{1}{5}Hz = | f_{spitze} - f |
         self.play(equation_beat_frequency_value.animate.move_to(equation_beat_frequency), FadeOut(equation_beat_frequency))
         self.wait(2)
         equation_comb_spike_value = comb_spike_value.copy()
+        # \frac{1}{5}Hz = | 7Hz - f |
         self.play(equation_comb_spike_value.animate.move_to(equation_comb_spike), FadeOut(equation_comb_spike))
         self.wait(5)
+        # \frac{1}{5}Hz = 7Hz - f 
         self.play(FadeOut(equation_abs1), FadeOut(equation_abs2))
         self.wait(5)
         equation_new_plus = MathTex(r"+").move_to(equation_equals)
         equation_new_minus = MathTex(r"-").move_to(equation_beat_frequency_value).shift(LEFT)
+        # -\frac{1}{5}Hz + 7Hz = f
         self.play(Transform(equation_equals, equation_new_plus), Transform(equation_minus, MathTex(r"=").move_to(equation_minus)), Create(equation_new_minus))
         self.wait(5)
+        # 6.8Hz = f
         self.play(Transform(VGroup(equation_new_minus, equation_beat_frequency_value, equation_equals, equation_comb_spike_value), MathTex(r"6.8Hz").move_to(equation_comb_spike_value)))
         
         
