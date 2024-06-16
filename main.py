@@ -196,6 +196,8 @@ class DetermineFrequency(Scene):
                        [0,   0,  1]]
 
         self.play(ApplyMatrix(zoom_matrix, plane), ApplyMatrix(zoom_matrix, beat_wave))
+        self.wait(5)
+        self.play(Create(MathTex(r"f_{Schwebung}=\frac{1}{5}Hz").shift(UP*2.5+LEFT*0.4)))
 
 
 import sys
