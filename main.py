@@ -43,10 +43,13 @@ def generateSpectrogramSpike(n: int) -> Rectangle:
     rect.shift(RIGHT*(n-3)+rect.height/2*UP)
     return rect
 
-def calcWaveForFrequency(f: int) -> FunctionGraph:
+def calcWaveForFrequency(f: int, color = None, **kwargs) -> FunctionGraph:
+    if color is None:
+        color = comb_spike_colors[f-5]
     return FunctionGraph(
         lambda x: np.sin(f*x)*np.exp(np.square(7-f)/-2),
-        color=comb_spike_colors[f-5]
+        color=color,
+        **kwargs
     )
 
 def add_spectrogram(scene: Scene):
@@ -121,6 +124,44 @@ class Superposition(Scene):
             self.play(AnimationGroup(FadeToColor(sum_wave, WHITE), FadeOut(prev_wave)))
             prev_wave = sum_wave
         self.play(*[FadeOut(o) for o in spectrogram_objects])
+
+class DetermineFrequency(Scene):
+    def construct(self):
+        # Setup ending state of Scene "Superposition"
+        plane = NumberPlane(x_range=(-40,40,1)).shift(OUT)
+        self.add(plane, Text("E").shift(LEFT*0.5+UP*3.5), Text("x").shift(RIGHT*6.5+DOWN*0.5))
+        frequency_comb = FunctionGraph(
+            lambda x: np.sum([np.sin(f*x)*np.exp(np.square(7-f)/-2) for f in range(5,10)]),
+            color=WHITE
+        )
+        self.add(frequency_comb)
+
+        # Add a wave of of frequency 6.8/2Pi (unknown to the viewer)
+        # The frequency is known to be slightly below the 7/2Pi comb spike
+        # The frequency will be determined by measuring the beat frequency of it and the aforementioned comb spike
+
+        unknown_wave = calcWaveForFrequency(6.8, color=RED, x_range=(-40,40))
+        self.play(Create(unknown_wave), Create(MathTex(r"f=?").shift(UP*3.5+RIGHT*3.5)))
+        self.wait(1)
+        # Convert the unknown wave to a beat frequency wave
+
+        beat_wave = FunctionGraph(
+            lambda x: unknown_wave.function(x)[1] + frequency_comb.function(x)[1],
+            color=RED,
+            x_range=(-40,40)
+        ).shift(OUT)
+        self.play(Transform(unknown_wave, beat_wave))
+        self.remove(unknown_wave)
+        self.add(beat_wave)
+        self.play(FadeToColor(beat_wave, WHITE), FadeOut(frequency_comb))
+
+        # Zoom out to show the beat frequency (Beat repeats at ((7-6.8)/2Pi)^-1 = 10Pi)
+
+        zoom_matrix = [[2/5, 0, -7],
+                       [0,   1,  0],
+                       [0,   0,  1]]
+
+        self.play(ApplyMatrix(zoom_matrix, plane), ApplyMatrix(zoom_matrix, beat_wave))
 
 
 import sys
