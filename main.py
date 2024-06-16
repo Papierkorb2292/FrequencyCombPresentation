@@ -129,6 +129,31 @@ class Superposition(Scene):
             prev_wave = sum_wave
         self.play(*[FadeOut(o) for o in spectrogram_objects])
 
+# This scene sets up a new wave whose frequency is supposed to be determined accurately
+# The only thing known about the frequency is that it is slightly below the 7Hz comb spike
+class UnknownWaveFrequency(Scene):
+    def construct(self):
+        add_spectrogram(self)
+
+        yellow_spike = self.mobjects[-1].submobjects[2]
+
+        wave_frequenvy_indicator_wiggle = ValueTracker(0)
+        wave_frequenvy_indicator_wiggle.add_updater(lambda m, dt: m.increment_value(2*dt))
+        self.add(wave_frequenvy_indicator_wiggle)
+        
+        wave_frequency_indicator = Line(ORIGIN, UP*6, color=RED).shift(DOWN*3)
+        wave_frequency_indicator.add_updater(lambda m: m.set_x(0.25*np.sin(wave_frequenvy_indicator_wiggle.get_value()) + 3.75))
+
+        frequency_equation = MathTex(r"f=?")
+
+        frequency_equation.add_updater(lambda m: m.next_to(wave_frequency_indicator, UP))
+
+        self.play(Create(wave_frequency_indicator), Create(frequency_equation))
+        self.wait(4)
+        self.play(Create(MathTex(r"f_{spitze}=7Hz", color=YELLOW).next_to(yellow_spike, DOWN)))
+        self.wait(4)
+
+
 class DetermineFrequency(Scene):
     def construct(self):
         # Setup ending state of Scene "Superposition"
@@ -140,12 +165,12 @@ class DetermineFrequency(Scene):
         )
         self.add(frequency_comb)
 
-        # Add a wave of of frequency 6.8/2Pi (unknown to the viewer)
-        # The frequency is known to be slightly below the 7/2Pi comb spike
+        # Add a wave of of frequency 6.8 (unknown to the viewer)
+        # The frequency is known to be slightly below the 7Hz comb spike
         # The frequency will be determined by measuring the beat frequency of it and the aforementioned comb spike
 
         unknown_wave = calcWaveForFrequency(6.8, color=RED)
-        self.play(Create(unknown_wave), Create(MathTex(r"f=?").shift(UP*3.5+RIGHT*3.5)))
+        self.play(Create(unknown_wave))
         
         # Extend unknown_wave to (-40,40)
         self.remove(unknown_wave)
